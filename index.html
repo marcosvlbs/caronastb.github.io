@@ -134,7 +134,7 @@
 
     <script>
         const ANO = 2026;
-        const SENHA_ACESSO = "Marcos@";
+        const SENHA_ACESSO = "Unimed@182";
         const HOJE = new Date();
         const MES_ATUAL = HOJE.getMonth();
         const DIA_ATUAL = HOJE.getDate();
@@ -327,8 +327,14 @@
                 });
                 
                 if (dt.getDay() === 3 || dt.getDay() === 5) {
-                    if (localStorage.getItem(`t26-${mesSel}-${d}-ida-falta`) !== 'true' && localStorage.getItem(`t26-${mesSel}-${d}-ida-ok`) !== 'true') p.push("Thalita Ida");
-                    if (localStorage.getItem(`t26-${mesSel}-${d}-vol-falta`) !== 'true' && localStorage.getItem(`t26-${mesSel}-${d}-vol-ok`) !== 'true') p.push("Thalita Volta");
+                    if (localStorage.getItem(`t26-${mesSel}-${d}-ida-falta`) !== 'true' && localStorage.getItem(`t26-${mesSel}-${d}-ida-ok`) !== 'true') {
+                        let motIda = localStorage.getItem(`t26-${mesSel}-${d}-ida-aline`) === 'true' ? "(Aline)" : (localStorage.getItem(`t26-${mesSel}-${d}-ida-marcos`) === 'true' ? "(Marcos)" : "");
+                        p.push(`Thalita Ida ${motIda}`.trim());
+                    }
+                    if (localStorage.getItem(`t26-${mesSel}-${d}-vol-falta`) !== 'true' && localStorage.getItem(`t26-${mesSel}-${d}-vol-ok`) !== 'true') {
+                        let motVol = localStorage.getItem(`t26-${mesSel}-${d}-vol-aline`) === 'true' ? "(Aline)" : (localStorage.getItem(`t26-${mesSel}-${d}-vol-marcos`) === 'true' ? "(Marcos)" : "");
+                        p.push(`Thalita Volta ${motVol}`.trim());
+                    }
                 }
                 
                 if (p.length > 0) {
@@ -346,5 +352,4 @@
         sincronizarGoogleSheets();
     </script>
 </body>
-
 </html>
