@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Caronas - 2026</title>
+    <style>
+        :root {
+            --primary: #4f46e5; --bg-body: #f8fafc; --bg-card: #ffffff;
+            --text-main: #1e293b; --text-muted: #64748b; --border-color: #e2e8f0;
+            --success: #22c55e; --danger: #ef4444; --thalita: #8b5cf6;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 20px; }
+        
+        .no-print { display: block; }
+        h2 { text-align: center; margin-bottom: 20px; }
+
+        .tabs-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; margin-bottom: 20px; padding: 5px; background: #f1f5f9; border-radius: 10px; }
+        .tab-btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; background: transparent; font-weight: 600; color: var(--text-muted); font-size: 0.85em; }
+        .tab-btn.active { background: white; color: var(--primary); box-shadow: var(--shadow); }
+
+        .controls { text-align: center; margin-bottom: 20px; }
+        .btn { padding: 8px 16px; margin: 0 4px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.8rem; }
+        .btn-sync { background-color: #f1f5f9; color: var(--primary); border: 1px solid var(--primary); }
+        .btn-save { background-color: var(--success); color: white; }
+        .btn-pdf { background-color: #0ea5e9; color: white; }
+        .btn-export { background-color: var(--primary); color: white; }
+        .btn-import { background-color: #64748b; color: white; }
+
+        .main-container { display: flex; flex-direction: column; gap: 20px; }
+        .content-wrapper { display: flex; gap: 20px; align-items: flex-start; }
+        
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; flex-grow: 1; min-width: 850px; position: relative; }
+        .weekday-header { text-align: center; font-weight: 700; color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; }
+
+        .day-card { background: var(--bg-card); border-radius: 10px; padding: 10px; min-height: 180px; border: 1px solid var(--border-color); position: relative; }
+        .completed { background-color: #f0fdf4 !important; border-color: #bbf7d0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .completed::after { content: "✓"; position: absolute; top: 5px; right: 5px; color: var(--success); font-weight: bold; font-size: 1.2rem; }
+
+        .day-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .car-input { width: 60%; border: 1px solid var(--border-color); border-radius: 4px; padding: 2px 5px; font-size: 0.7rem; text-transform: uppercase; }
+
+        .person-row { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; margin: 2px 0; padding: 4px; background: #f8fafc; border-radius: 4px; }
+        
+        .print-check { display: inline-block; width: 14px; height: 14px; border: 1px solid #cbd5e1; border-radius: 3px; text-align: center; line-height: 14px; font-size: 11px; font-weight: bold; background: white; cursor: pointer; flex-shrink: 0; }
+        .print-check.checked { background-color: var(--success) !important; color: white !important; border-color: var(--success) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .print-check.checked::after { content: "✓"; }
+
+        .absent-row { background-color: #fef2f2 !important; color: #94a3b8; -webkit-print-color-adjust: exact; }
+
+        .thalita-box { margin-top: 5px; padding-top: 5px; border-top: 2px solid #eee; }
+        .thalita-title { font-size: 0.65rem; font-weight: 800; color: var(--thalita); display: block; margin-bottom: 4px; }
+        .t-row { display: flex; align-items: center; gap: 4px; margin-bottom: 3px; padding: 2px; border-radius: 4px; }
+        .t-row.is-absent { background-color: #fee2e2 !important; -webkit-print-color-adjust: exact; }
+        .t-label { font-size: 0.6rem; font-weight: bold; width: 35px; color: #64748b; }
+        .t-btn { 
+            border: 1px solid #ddd6fe; background: white; color: #7c3aed; 
+            font-size: 0.6rem; font-weight: 800; width: 22px; height: 22px; 
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 3px; cursor: pointer; 
+        }
+        .t-btn.active { background: var(--thalita) !important; color: white !important; -webkit-print-color-adjust: exact; }
+        .t-ok { margin-left: auto; }
+
+        .btn-absent { cursor: pointer; border-radius: 3px; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 10px; border: 1px solid #cbd5e1; background: white; }
+        .btn-absent.active { background: var(--danger) !important; color: white !important; border-color: var(--danger); -webkit-print-color-adjust: exact; }
+        
+        .sidebar { width: 280px; background: white; border-radius: 10px; padding: 15px; border: 1px solid var(--border-color); }
+        .pending-item { margin-bottom: 8px; padding: 8px; background: #fffafb; border-radius: 6px; border-left: 3px solid var(--danger); font-size: 0.75rem; }
+
+        /* TRAVA MOBILE */
+        .mobile-lock-overlay { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 50; background: transparent; }
+        .floating-edit-btn { display: none; position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; border-radius: 50%; background: var(--primary); color: white; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 1000; font-weight: bold; font-size: 0.65rem; cursor: pointer; flex-direction: column; align-items: center; justify-content: center; }
+
+        /* AJUSTES PARA MOBILE */
+        @media screen and (max-width: 768px) {
+            body { padding: 8px; }
+            .controls { display: none; }
+            .floating-edit-btn { display: flex; }
+            .content-wrapper { flex-direction: column; gap: 10px; }
+            .sidebar { order: -1; width: 100%; box-sizing: border-box; padding: 10px; margin-bottom: 5px; }
+            .sidebar h3 { font-size: 1rem; margin: 0 0 10px 0; }
+            .calendar-grid { display: grid; grid-template-columns: repeat(2, 1fr); min-width: 100%; gap: 8px; }
+            .calendar-locked .mobile-lock-overlay { display: block; }
+            .calendar-locked .car-input { pointer-events: none; }
+            .weekday-header { display: none; }
+            .day-card { min-height: auto; padding: 8px; font-size: 0.7rem; }
+            .day-card:empty { display: none; }
+            .day-header b { font-size: 0.8rem; }
+            .car-input { width: 55%; font-size: 0.65rem; }
+            .person-row { padding: 6px; gap: 4px; font-size: 0.7rem; }
+            .t-row { padding: 4px; font-size: 0.65rem; }
+            .t-btn { width: 18px; height: 18px; font-size: 0.55rem; }
+            .btn-absent { width: 16px; height: 16px; font-size: 8px; }
+        }
+
+        @media print {
+            .no-print, .tabs-container, .controls, .btn-absent, .floating-edit-btn { display: none !important; }
+            body { padding: 0; background: white; }
+            .content-wrapper { display: block; }
+            .calendar-grid { min-width: 100%; display: grid !important; grid-template-columns: repeat(7, 1fr) !important; gap: 5px; }
+            .day-card { border: 1px solid #ccc !important; min-height: 130px; display: block !important; }
+            .sidebar { width: 100%; border: none; margin-top: 30px; }
+            .print-check.checked { background-color: #22c55e !important; color: white !important; border-color: #22c55e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="floating-edit-btn no-print" id="btnLock" onclick="toggleMobileLock()">🔓<br>EDITAR</button>
+
+    <h2 id="monthTitle">📅 Controle de Caronas - 2026</h2>
+    <div class="tabs-container no-print" id="tabs"></div>
+
+    <div class="controls no-print">
+        <button class="btn btn-sync" onclick="sincronizarGoogleSheets()">🔄 Puxar Planilha</button>
+        <button class="btn btn-save" id="btnSalvar" onclick="salvarNaPlanilha()">💾 Salvar Planilha</button>
+        <button class="btn btn-export" onclick="exportarCSV()">📥 Exportar Backup</button>
+        <button class="btn btn-import" onclick="document.getElementById('fileInput').click()">📤 Importar Backup</button>
+        <button class="btn btn-pdf" onclick="window.print()">📄 Imprimir PDF</button>
+        <input type="file" id="fileInput" style="display:none" accept=".csv" onchange="importarCSV(this)">
+    </div>
+
+    <div class="main-container">
+        <div class="content-wrapper">
+            <div class="calendar-grid" id="calendar"></div>
+            <div class="sidebar" id="sidebarPendencias">
+                <h3>Pendências: <span id="selectedMonthName"></span></h3>
+                <div id="pendingList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ANO = 2026;
+        const SENHA_ACESSO = "Unimed@182";
+        const HOJE = new Date();
+        const MES_ATUAL = HOJE.getMonth();
+        const DIA_ATUAL = HOJE.getDate();
+        let mesSel = MES_ATUAL;
+        let mobileEditMode = false;
+        const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        const SHEET_URL = "https://script.google.com/macros/s/AKfycby6mh-uw85IelgDJYDhavAgqAriQSCVaLIXLYZTX_BMYTidCei2j5T9VTS5Le6by2EhUQ/exec";
+
+        async function sincronizarGoogleSheets() {
+            try {
+                const response = await fetch(SHEET_URL);
+                const text = await response.text();
+                if(!text || text.includes("<!DOCTYPE")) return; 
+                localStorage.clear();
+                const linhas = text.split("\n");
+                linhas.forEach(l => {
+                    const parts = l.split(",");
+                    if (parts.length >= 2) localStorage.setItem(parts[0].trim(), parts[1].trim());
+                });
+                renderizar();
+            } catch (e) { console.error("Erro ao carregar:", e); }
+        }
+
+        async function salvarNaPlanilha() {
+            const senha = prompt("Digite a senha para salvar na planilha:");
+            if (senha !== SENHA_ACESSO) { alert("Senha incorreta!"); return; }
+            const btn = document.getElementById('btnSalvar');
+            btn.innerText = "⏳..."; btn.disabled = true;
+            const dados = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i); dados[k] = localStorage.getItem(k);
+            }
+            try {
+                await fetch(SHEET_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(dados) });
+                alert("Salvo com sucesso!");
+            } catch (e) { alert("Erro ao salvar."); }
+            finally { btn.innerText = "💾 Salvar Planilha"; btn.disabled = false; }
+        }
+
+        function toggleMobileLock() {
+            if (!mobileEditMode) {
+                const senha = prompt("Senha para editar:");
+                if (senha === SENHA_ACESSO) {
+                    mobileEditMode = true;
+                    document.getElementById('btnLock').innerHTML = "🔒<br>TRAVAR";
+                    document.getElementById('btnLock').style.background = "var(--success)";
+                    renderizar();
+                } else { alert("Senha incorreta!"); }
+            } else {
+                mobileEditMode = false;
+                document.getElementById('btnLock').innerHTML = "🔓<br>EDITAR";
+                document.getElementById('btnLock').style.background = "var(--primary)";
+                renderizar();
+            }
+        }
+
+        function exportarCSV() {
+            let csv = "Chave,Valor\n";
+            for (let i = 0; i < localStorage.length; i++) csv += `${localStorage.key(i)},${localStorage.getItem(localStorage.key(i))}\n`;
+            const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob); link.download = `backup_caronas_2026.csv`; link.click();
+        }
+
+        function importarCSV(input) {
+            const senha = prompt("Senha para importar:");
+            if (senha !== SENHA_ACESSO) { alert("Senha incorreta!"); return; }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const linhas = e.target.result.split("\n");
+                linhas.forEach(l => { const parts = l.split(","); if (parts.length >= 2) localStorage.setItem(parts[0].trim(), parts[1].trim()); });
+                renderizar(); alert("Importado!");
+            };
+            reader.readAsText(input.files[0]);
+        }
+
+        function toggle(key) {
+            localStorage.setItem(key, localStorage.getItem(key) === 'true' ? 'false' : 'true');
+            renderizar();
+        }
+
+        function setMotorista(tipo, mot, dia) {
+            const kF = `t26-${mesSel}-${dia}-${tipo}-falta`;
+            if(localStorage.getItem(kF) === 'true') return;
+            localStorage.setItem(`t26-${mesSel}-${dia}-${tipo}-aline`, 'false');
+            localStorage.setItem(`t26-${mesSel}-${dia}-${tipo}-marcos`, 'false');
+            localStorage.setItem(`t26-${mesSel}-${dia}-${tipo}-${mot}`, 'true');
+            renderizar();
+        }
+
+        function renderizar() {
+            const tabs = document.querySelectorAll('.tab-btn');
+            tabs.forEach((btn, idx) => btn.classList.toggle('active', idx === mesSel));
+            document.getElementById('monthTitle').innerText = `📅 Caronas - ${meses[mesSel]} / ${ANO}`;
+            document.getElementById('selectedMonthName').innerText = meses[mesSel];
+            const grid = document.getElementById('calendar');
+            
+            if (!mobileEditMode) grid.classList.add('calendar-locked');
+            else grid.classList.remove('calendar-locked');
+
+            grid.innerHTML = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'].map(d => `<div class="weekday-header">${d}</div>`).join('');
+
+            const inicio = new Date(ANO, mesSel, 1).getDay();
+            const desloc = inicio === 0 ? 6 : inicio - 1;
+            for (let i = 0; i < desloc; i++) grid.appendChild(Object.assign(document.createElement('div'), {className:'day-card'}));
+
+            for (let d = 1; d <= new Date(ANO, mesSel + 1, 0).getDate(); d++) {
+                const sem = new Date(ANO, mesSel, d).getDay();
+                const card = document.createElement('div'); card.className = 'day-card'; card.id = `card-${d}`;
+
+                if (sem === 0 || sem === 6) {
+                    card.style.background = "#f1f5f9";
+                    card.innerHTML = `<div class="day-header"><b>${d}</b></div><div style="color:#94a3b8; font-size:0.6rem; text-align:center; margin-top:5px; font-weight:bold;">SAB/DOM</div>`;
+                } else {
+                    const carK = `car-${mesSel}-${d}`;
+                    let html = `<div class="mobile-lock-overlay"></div>`;
+                    html += `<div class="day-header"><b>${d}</b><input type="text" class="car-input" placeholder="CARRO" value="${localStorage.getItem(carK)||''}" oninput="localStorage.setItem('${carK}', this.value.toUpperCase())"></div>`;
+                    const nomes = (sem === 5) ? ["MARCOS", "KELEN"] : ["ALINE", "KELEN"];
+                    nomes.forEach(n => {
+                        const pk = `p-${mesSel}-${d}-${n}`, fk = `f-${mesSel}-${d}-${n}`;
+                        const isP = localStorage.getItem(pk)==='true', isF = localStorage.getItem(fk)==='true';
+                        html += `<div class="person-row ${isF?'absent-row':''}">
+                            <div class="btn-absent no-print ${isF?'active':''}" onclick="toggle('${fk}')">X</div>
+                            <div class="print-check ${isP?'checked':''}" onclick="${isF ? '' : `toggle('${pk}')`}"></div>
+                            <span>${n}</span>
+                        </div>`;
+                    });
+
+                    if (sem === 3 || sem === 5) {
+                        const getActive = (k) => localStorage.getItem(k) === 'true' ? 'active' : '';
+                        html += `<div class="thalita-box"><span class="thalita-title">THALITA</span>
+                            <div class="t-row ${localStorage.getItem(`t26-${mesSel}-${d}-ida-falta`)==='true'?'is-absent':''}">
+                                <div class="btn-absent no-print ${localStorage.getItem(`t26-${mesSel}-${d}-ida-falta`)==='true'?'active':''}" onclick="toggle('t26-${mesSel}-${d}-ida-falta')">X</div>
+                                <span class="t-label">IDA</span>
+                                <button class="t-btn ${getActive(`t26-${mesSel}-${d}-ida-aline`)}" onclick="setMotorista('ida','aline',${d})">A</button>
+                                <button class="t-btn ${getActive(`t26-${mesSel}-${d}-ida-marcos`)}" onclick="setMotorista('ida','marcos',${d})">M</button>
+                                <div class="print-check t-ok ${localStorage.getItem(`t26-${mesSel}-${d}-ida-ok`)==='true'?'checked':''}" onclick="toggle('t26-${mesSel}-${d}-ida-ok')"></div>
+                            </div>
+                            <div class="t-row ${localStorage.getItem(`t26-${mesSel}-${d}-vol-falta`)==='true'?'is-absent':''}">
+                                <div class="btn-absent no-print ${localStorage.getItem(`t26-${mesSel}-${d}-vol-falta`)==='true'?'active':''}" onclick="toggle('t26-${mesSel}-${d}-vol-falta')">X</div>
+                                <span class="t-label">VOLTA</span>
+                                <button class="t-btn ${getActive(`t26-${mesSel}-${d}-vol-aline`)}" onclick="setMotorista('vol','aline',${d})">A</button>
+                                <button class="t-btn ${getActive(`t26-${mesSel}-${d}-vol-marcos`)}" onclick="setMotorista('vol','marcos',${d})">M</button>
+                                <div class="print-check t-ok ${localStorage.getItem(`t26-${mesSel}-${d}-vol-ok`)==='true'?'checked':''}" onclick="toggle('t26-${mesSel}-${d}-vol-ok')"></div>
+                            </div></div>`;
+                    }
+                    card.innerHTML = html;
+                }
+                grid.appendChild(card);
+                verificarStatus(d);
+            }
+            atualizarPendencias();
+        }
+
+        function verificarStatus(d) {
+            const card = document.getElementById(`card-${d}`);
+            const sem = new Date(ANO, mesSel, d).getDay();
+            if (!card || sem === 0 || sem === 6) return;
+            let ok = true;
+            const nomes = (sem === 5) ? ["MARCOS", "KELEN"] : ["ALINE", "KELEN"];
+            nomes.forEach(n => { if (localStorage.getItem(`p-${mesSel}-${d}-${n}`) !== 'true' && localStorage.getItem(`f-${mesSel}-${d}-${n}`) !== 'true') ok = false; });
+            if (sem === 3 || sem === 5) {
+                if (localStorage.getItem(`t26-${mesSel}-${d}-ida-ok`) !== 'true' && localStorage.getItem(`t26-${mesSel}-${d}-ida-falta`) !== 'true') ok = false;
+                if (localStorage.getItem(`t26-${mesSel}-${d}-vol-ok`) !== 'true' && localStorage.getItem(`t26-${mesSel}-${d}-vol-falta`) !== 'true') ok = false;
+            }
+            card.classList.toggle('completed', ok);
+        }
+
+        function atualizarPendencias() {
+            const list = document.getElementById('pendingList'); list.innerHTML = '';
+            
+            // Define o limite de dias para verificar pendências
+            let limiteDia;
+            if (mesSel < MES_ATUAL) {
+                limiteDia = 31; // Mês passado: verifica tudo
+            } else if (mesSel === MES_ATUAL) {
+                limiteDia = DIA_ATUAL; // Mês atual: verifica até hoje
+            } else {
+                return; // Meses futuros: não mostra pendências
+            }
+
+            for (let d = 1; d <= limiteDia; d++) {
+                const dt = new Date(ANO, mesSel, d);
+                if (dt.getDay() === 0 || dt.getDay() === 6 || dt.getMonth() !== mesSel) continue;
+                
+                let p = [];
+                const nomes = (dt.getDay() === 5) ? ["MARCOS", "KELEN"] : ["ALINE", "KELEN"];
+                nomes.forEach(n => { 
+                    if (localStorage.getItem(`p-${mesSel}-${d}-${n}`) !== 'true' && localStorage.getItem(`f-${mesSel}-${d}-${n}`) !== 'true') p.push(n); 
+                });
+                
+                if (dt.getDay() === 3 || dt.getDay() === 5) {
+                    if (localStorage.getItem(`t26-${mesSel}-${d}-ida-falta`) !== 'true' && localStorage.getItem(`t26-${mesSel}-${d}-ida-ok`) !== 'true') p.push("Thalita Ida");
+                    if (localStorage.getItem(`t26-${mesSel}-${d}-vol-falta`) !== 'true' && localStorage.getItem(`t26-${mesSel}-${d}-vol-ok`) !== 'true') p.push("Thalita Volta");
+                }
+                
+                if (p.length > 0) {
+                    list.innerHTML += `<div class="pending-item"><b>Dia ${d}:</b> ${p.join(' | ')}</div>`;
+                }
+            }
+        }
+
+        const tB = document.getElementById('tabs');
+        meses.forEach((m, i) => {
+            const b = document.createElement('button'); b.className = `tab-btn`; b.innerText = m;
+            b.onclick = () => { mesSel = i; renderizar(); }; tB.appendChild(b);
+        });
+
+        sincronizarGoogleSheets();
+    </script>
+</body>
+</html>
