@@ -13,6 +13,19 @@
         }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 20px; }
         
+        /* Animação de Carregamento */
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.8); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 9999;
+        }
+        .spinner {
+            width: 50px; height: 50px; border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 10px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
         .no-print { display: block; }
         h2 { text-align: center; margin-bottom: 20px; }
 
@@ -69,11 +82,9 @@
         .sidebar { width: 280px; background: white; border-radius: 10px; padding: 15px; border: 1px solid var(--border-color); }
         .pending-item { margin-bottom: 8px; padding: 8px; background: #fffafb; border-radius: 6px; border-left: 3px solid var(--danger); font-size: 0.75rem; }
 
-        /* TRAVA MOBILE */
         .mobile-lock-overlay { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 50; background: transparent; }
         .floating-edit-btn { display: none; position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; border-radius: 50%; background: var(--primary); color: white; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 1000; font-weight: bold; font-size: 0.65rem; cursor: pointer; flex-direction: column; align-items: center; justify-content: center; }
 
-        /* AJUSTES PARA MOBILE */
         @media screen and (max-width: 768px) {
             body { padding: 8px; }
             .controls { display: none; }
@@ -96,7 +107,7 @@
         }
 
         @media print {
-            .no-print, .tabs-container, .controls, .btn-absent, .floating-edit-btn { display: none !important; }
+            #loading-overlay, .no-print, .tabs-container, .controls, .btn-absent, .floating-edit-btn { display: none !important; }
             body { padding: 0; background: white; }
             .content-wrapper { display: block; }
             .calendar-grid { min-width: 100%; display: grid !important; grid-template-columns: repeat(7, 1fr) !important; gap: 5px; }
@@ -107,6 +118,11 @@
     </style>
 </head>
 <body>
+
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <span>Carregando dados...</span>
+    </div>
 
     <button class="floating-edit-btn no-print" id="btnLock" onclick="toggleMobileLock()">🔓<br>EDITAR</button>
 
@@ -144,10 +160,14 @@
         const SHEET_URL = "https://script.google.com/macros/s/AKfycby6mh-uw85IelgDJYDhavAgqAriQSCVaLIXLYZTX_BMYTidCei2j5T9VTS5Le6by2EhUQ/exec";
 
         async function sincronizarGoogleSheets() {
+            document.getElementById('loading-overlay').style.display = 'flex';
             try {
                 const response = await fetch(SHEET_URL);
                 const text = await response.text();
-                if(!text || text.includes("<!DOCTYPE")) return; 
+                if(!text || text.includes("<!DOCTYPE")) {
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    return; 
+                }
                 localStorage.clear();
                 const linhas = text.split("\n");
                 linhas.forEach(l => {
@@ -155,7 +175,11 @@
                     if (parts.length >= 2) localStorage.setItem(parts[0].trim(), parts[1].trim());
                 });
                 renderizar();
-            } catch (e) { console.error("Erro ao carregar:", e); }
+            } catch (e) { 
+                console.error("Erro ao carregar:", e); 
+            } finally {
+                document.getElementById('loading-overlay').style.display = 'none';
+            }
         }
 
         async function salvarNaPlanilha() {
@@ -305,27 +329,17 @@
 
         function atualizarPendencias() {
             const list = document.getElementById('pendingList'); list.innerHTML = '';
-            
-            // Define o limite de dias para verificar pendências
             let limiteDia;
-            if (mesSel < MES_ATUAL) {
-                limiteDia = 31; // Mês passado: verifica tudo
-            } else if (mesSel === MES_ATUAL) {
-                limiteDia = DIA_ATUAL; // Mês atual: verifica até hoje
-            } else {
-                return; // Meses futuros: não mostra pendências
-            }
+            if (mesSel < MES_ATUAL) limiteDia = 31;
+            else if (mesSel === MES_ATUAL) limiteDia = DIA_ATUAL;
+            else return;
 
             for (let d = 1; d <= limiteDia; d++) {
                 const dt = new Date(ANO, mesSel, d);
                 if (dt.getDay() === 0 || dt.getDay() === 6 || dt.getMonth() !== mesSel) continue;
-                
                 let p = [];
                 const nomes = (dt.getDay() === 5) ? ["MARCOS", "KELEN"] : ["ALINE", "KELEN"];
-                nomes.forEach(n => { 
-                    if (localStorage.getItem(`p-${mesSel}-${d}-${n}`) !== 'true' && localStorage.getItem(`f-${mesSel}-${d}-${n}`) !== 'true') p.push(n); 
-                });
-                
+                nomes.forEach(n => { if (localStorage.getItem(`p-${mesSel}-${d}-${n}`) !== 'true' && localStorage.getItem(`f-${mesSel}-${d}-${n}`) !== 'true') p.push(n); });
                 if (dt.getDay() === 3 || dt.getDay() === 5) {
                     if (localStorage.getItem(`t26-${mesSel}-${d}-ida-falta`) !== 'true' && localStorage.getItem(`t26-${mesSel}-${d}-ida-ok`) !== 'true') {
                         let motIda = localStorage.getItem(`t26-${mesSel}-${d}-ida-aline`) === 'true' ? "(Aline)" : (localStorage.getItem(`t26-${mesSel}-${d}-ida-marcos`) === 'true' ? "(Marcos)" : "");
@@ -336,10 +350,7 @@
                         p.push(`Thalita Volta ${motVol}`.trim());
                     }
                 }
-                
-                if (p.length > 0) {
-                    list.innerHTML += `<div class="pending-item"><b>Dia ${d}:</b> ${p.join(' | ')}</div>`;
-                }
+                if (p.length > 0) list.innerHTML += `<div class="pending-item"><b>Dia ${d}:</b> ${p.join(' | ')}</div>`;
             }
         }
 
