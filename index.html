@@ -82,6 +82,13 @@
         .sidebar { width: 280px; background: white; border-radius: 10px; padding: 15px; border: 1px solid var(--border-color); }
         .pending-item { margin-bottom: 8px; padding: 8px; background: #fffafb; border-radius: 6px; border-left: 3px solid var(--danger); font-size: 0.75rem; }
 
+        /* Estilo Financeiro */
+        .finance-card { margin-top: 20px; padding-top: 15px; border-top: 2px dashed var(--border-color); }
+        .finance-item { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.85rem; border-bottom: 1px solid #f1f5f9; }
+        .finance-item:last-child { border-bottom: none; }
+        .finance-name { font-weight: 600; color: var(--text-main); }
+        .finance-value { font-weight: 800; color: var(--primary); }
+
         .mobile-lock-overlay { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 50; background: transparent; }
         .floating-edit-btn { display: none; position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; border-radius: 50%; background: var(--primary); color: white; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 1000; font-weight: bold; font-size: 0.65rem; cursor: pointer; flex-direction: column; align-items: center; justify-content: center; }
 
@@ -144,13 +151,17 @@
             <div class="sidebar" id="sidebarPendencias">
                 <h3>Pendências: <span id="selectedMonthName"></span></h3>
                 <div id="pendingList"></div>
+                <div class="finance-card">
+                    <h3>💰 Resumo - Valores em aberto</h3>
+                    <div id="financeList"></div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         const ANO = 2026;
-        const SENHA_ACESSO = "Unimed@182";
+        const SENHA_ACESSO = "Marcos@";
         const HOJE = new Date();
         const MES_ATUAL = HOJE.getMonth();
         const DIA_ATUAL = HOJE.getDate();
@@ -311,6 +322,7 @@
                 verificarStatus(d);
             }
             atualizarPendencias();
+            atualizarFinanceiro();
         }
 
         function verificarStatus(d) {
@@ -352,6 +364,41 @@
                 }
                 if (p.length > 0) list.innerHTML += `<div class="pending-item"><b>Dia ${d}:</b> ${p.join(' | ')}</div>`;
             }
+        }
+
+        function atualizarFinanceiro() {
+            const list = document.getElementById('financeList'); list.innerHTML = '';
+            const totals = { "ALINE": 0, "MARCOS": 0, "KELEN": 0, "THALITA (p/ Aline)": 0, "THALITA (p/ Marcos)": 0 };
+            const VAL_DIA = 12.0; const VAL_TRECHO = 6.0;
+            const diasNoMes = new Date(ANO, mesSel + 1, 0).getDate();
+
+            for (let d = 1; d <= diasNoMes; d++) {
+                if (mesSel === MES_ATUAL && d >= DIA_ATUAL) continue;
+                if (mesSel > MES_ATUAL) continue;
+
+                const dt = new Date(ANO, mesSel, d);
+                const sem = dt.getDay();
+                if (sem === 0 || sem === 6) continue;
+
+                const passageiros = (sem === 5) ? ["MARCOS", "KELEN"] : ["ALINE", "KELEN"];
+                passageiros.forEach(n => {
+                    if (localStorage.getItem(`p-${mesSel}-${d}-${n}`) !== 'true' && localStorage.getItem(`f-${mesSel}-${d}-${n}`) !== 'true') totals[n] += VAL_DIA;
+                });
+
+                if (sem === 3 || sem === 5) {
+                    ['ida', 'vol'].forEach(t => {
+                        if (localStorage.getItem(`t26-${mesSel}-${d}-${t}-ok`) !== 'true' && localStorage.getItem(`t26-${mesSel}-${d}-${t}-falta`) !== 'true') {
+                            if (localStorage.getItem(`t26-${mesSel}-${d}-${t}-aline`) === 'true') totals["THALITA (p/ Aline)"] += VAL_TRECHO;
+                            if (localStorage.getItem(`t26-${mesSel}-${d}-${t}-marcos`) === 'true') totals["THALITA (p/ Marcos)"] += VAL_TRECHO;
+                        }
+                    });
+                }
+            }
+
+            Object.keys(totals).forEach(nome => {
+                if(totals[nome] > 0) list.innerHTML += `<div class="finance-item"><span class="finance-name">${nome}</span><span class="finance-value">R$ ${totals[nome].toFixed(2).replace('.', ',')}</span></div>`;
+            });
+            if (list.innerHTML === '') list.innerHTML = '<div style="font-size:0.75rem; color:var(--success); font-weight:bold;">Sem valores em aberto! ✅</div>';
         }
 
         const tB = document.getElementById('tabs');
