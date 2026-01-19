@@ -82,20 +82,24 @@
         .sidebar { width: 280px; background: white; border-radius: 10px; padding: 15px; border: 1px solid var(--border-color); }
         .pending-item { margin-bottom: 8px; padding: 8px; background: #fffafb; border-radius: 6px; border-left: 3px solid var(--danger); font-size: 0.75rem; }
 
-        /* Estilo Financeiro */
+        /* Estilo Financeiro Melhorado */
         .finance-card { margin-top: 20px; padding-top: 15px; border-top: 2px dashed var(--border-color); }
-        .finance-item { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.85rem; border-bottom: 1px solid #f1f5f9; }
+        .finance-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; font-size: 0.85rem; border-bottom: 1px solid #f1f5f9; background: #fafafa; border-radius: 8px; margin-bottom: 6px; }
         .finance-item:last-child { border-bottom: none; }
-        .finance-name { font-weight: 600; color: var(--text-main); }
-        .finance-value { font-weight: 800; color: var(--primary); }
+        .finance-name { font-weight: 700; color: var(--text-main); text-transform: capitalize; margin-bottom: 4px; display: block; }
+        .finance-tag { display: inline-block; padding: 2px 8px; background: white; color: var(--primary); font-size: 0.65rem; font-weight: 700; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+        .finance-value { font-weight: 800; color: var(--primary); background: #eef2ff; padding: 4px 10px; border-radius: 6px; }
 
         .mobile-lock-overlay { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 50; background: transparent; }
-        .floating-edit-btn { display: none; position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; border-radius: 50%; background: var(--primary); color: white; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 1000; font-weight: bold; font-size: 0.65rem; cursor: pointer; flex-direction: column; align-items: center; justify-content: center; }
+        
+        .floating-edit-btn, .floating-pdf-btn { display: none; position: fixed; right: 20px; width: 55px; height: 55px; border-radius: 50%; color: white; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 1000; font-weight: bold; font-size: 0.65rem; cursor: pointer; flex-direction: column; align-items: center; justify-content: center; }
+        .floating-edit-btn { bottom: 20px; background: var(--primary); }
+        .floating-pdf-btn { bottom: 85px; background: #0ea5e9; }
 
         @media screen and (max-width: 768px) {
             body { padding: 8px; }
             .controls { display: none; }
-            .floating-edit-btn { display: flex; }
+            .floating-edit-btn, .floating-pdf-btn { display: flex; }
             .content-wrapper { flex-direction: column; gap: 10px; }
             .sidebar { order: -1; width: 100%; box-sizing: border-box; padding: 10px; margin-bottom: 5px; }
             .sidebar h3 { font-size: 1rem; margin: 0 0 10px 0; }
@@ -114,7 +118,7 @@
         }
 
         @media print {
-            #loading-overlay, .no-print, .tabs-container, .controls, .btn-absent, .floating-edit-btn { display: none !important; }
+            #loading-overlay, .no-print, .tabs-container, .controls, .btn-absent, .floating-edit-btn, .floating-pdf-btn { display: none !important; }
             body { padding: 0; background: white; }
             .content-wrapper { display: block; }
             .calendar-grid { min-width: 100%; display: grid !important; grid-template-columns: repeat(7, 1fr) !important; gap: 5px; }
@@ -131,6 +135,7 @@
         <span>Carregando dados...</span>
     </div>
 
+    <button class="floating-pdf-btn no-print" onclick="window.print()">📄<br>PDF</button>
     <button class="floating-edit-btn no-print" id="btnLock" onclick="toggleMobileLock()">🔓<br>EDITAR</button>
 
     <h2 id="monthTitle">📅 Controle de Caronas - 2026</h2>
@@ -152,7 +157,7 @@
                 <h3>Pendências: <span id="selectedMonthName"></span></h3>
                 <div id="pendingList"></div>
                 <div class="finance-card">
-                    <h3>💰 Resumo - Valores em aberto</h3>
+                    <h3>Valores em aberto</h3>
                     <div id="financeList"></div>
                 </div>
             </div>
@@ -368,7 +373,7 @@
 
         function atualizarFinanceiro() {
             const list = document.getElementById('financeList'); list.innerHTML = '';
-            const totals = { "ALINE": 0, "MARCOS": 0, "KELEN": 0, "THALITA (p/ Aline)": 0, "THALITA (p/ Marcos)": 0 };
+            const totals = { "Aline": 0, "Marcos": 0, "Kelen": 0, "Thalita_Aline": 0, "Thalita_Marcos": 0 };
             const VAL_DIA = 12.0; const VAL_TRECHO = 6.0;
             const diasNoMes = new Date(ANO, mesSel + 1, 0).getDate();
 
@@ -382,23 +387,40 @@
 
                 const passageiros = (sem === 5) ? ["MARCOS", "KELEN"] : ["ALINE", "KELEN"];
                 passageiros.forEach(n => {
-                    if (localStorage.getItem(`p-${mesSel}-${d}-${n}`) !== 'true' && localStorage.getItem(`f-${mesSel}-${d}-${n}`) !== 'true') totals[n] += VAL_DIA;
+                    if (localStorage.getItem(`p-${mesSel}-${d}-${n}`) !== 'true' && localStorage.getItem(`f-${mesSel}-${d}-${n}`) !== 'true') {
+                        const key = n.charAt(0).toUpperCase() + n.slice(1).toLowerCase();
+                        totals[key] += VAL_DIA;
+                    }
                 });
 
                 if (sem === 3 || sem === 5) {
                     ['ida', 'vol'].forEach(t => {
                         if (localStorage.getItem(`t26-${mesSel}-${d}-${t}-ok`) !== 'true' && localStorage.getItem(`t26-${mesSel}-${d}-${t}-falta`) !== 'true') {
-                            if (localStorage.getItem(`t26-${mesSel}-${d}-${t}-aline`) === 'true') totals["THALITA (p/ Aline)"] += VAL_TRECHO;
-                            if (localStorage.getItem(`t26-${mesSel}-${d}-${t}-marcos`) === 'true') totals["THALITA (p/ Marcos)"] += VAL_TRECHO;
+                            if (localStorage.getItem(`t26-${mesSel}-${d}-${t}-aline`) === 'true') totals["Thalita_Aline"] += VAL_TRECHO;
+                            if (localStorage.getItem(`t26-${mesSel}-${d}-${t}-marcos`) === 'true') totals["Thalita_Marcos"] += VAL_TRECHO;
                         }
                     });
                 }
             }
 
-            Object.keys(totals).forEach(nome => {
-                if(totals[nome] > 0) list.innerHTML += `<div class="finance-item"><span class="finance-name">${nome}</span><span class="finance-value">R$ ${totals[nome].toFixed(2).replace('.', ',')}</span></div>`;
+            Object.keys(totals).forEach(key => {
+                if(totals[key] > 0) {
+                    let label = key;
+                    let tagText = "";
+                    if(key === "Thalita_Aline") { label = "Thalita"; tagText = "Aline"; }
+                    if(key === "Thalita_Marcos") { label = "Thalita"; tagText = "Marcos"; }
+                    
+                    list.innerHTML += `
+                    <div class="finance-item">
+                        <div>
+                            <span class="finance-name">${label}</span>
+                            ${tagText ? `<span class="finance-tag">${tagText}</span>` : ''}
+                        </div>
+                        <span class="finance-value">R$ ${totals[key].toFixed(2).replace('.', ',')}</span>
+                    </div>`;
+                }
             });
-            if (list.innerHTML === '') list.innerHTML = '<div style="font-size:0.75rem; color:var(--success); font-weight:bold;">Sem valores em aberto! ✅</div>';
+            if (list.innerHTML === '') list.innerHTML = '<div style="font-size:0.75rem; color:var(--success); font-weight:bold; text-align:center; padding: 10px;">Sem pendências</div>';
         }
 
         const tB = document.getElementById('tabs');
