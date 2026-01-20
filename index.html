@@ -122,6 +122,10 @@
         .finance-tag { display: inline-block; padding: 2px 8px; background: white; color: var(--primary); font-size: 0.65rem; font-weight: 700; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
         .finance-value { font-weight: 800; color: var(--primary); background: #eef2ff; padding: 4px 10px; border-radius: 6px; }
 
+        /* NOVO BOTÃO PIX - MODIFICADO */
+        .btn-pix { padding: 4px 8px; background: white; color: var(--primary); border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.65rem; font-weight: bold; cursor: pointer; transition: 0.2s; margin-left: 8px; }
+        .btn-pix:hover { background: #f1f5f9; }
+
         .mobile-lock-overlay { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 50; background: transparent; }
         
         .floating-edit-btn, .floating-pdf-btn { display: none; position: fixed; right: 20px; width: 55px; height: 55px; border-radius: 50%; color: white; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 1000; font-weight: bold; font-size: 0.65rem; cursor: pointer; flex-direction: column; align-items: center; justify-content: center; }
@@ -206,6 +210,55 @@
         let mobileEditMode = false;
         const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
         const SHEET_URL = "https://script.google.com/macros/s/AKfycby6mh-uw85IelgDJYDhavAgqAriQSCVaLIXLYZTX_BMYTidCei2j5T9VTS5Le6by2EhUQ/exec";
+
+        // CONFIGURAÇÃO PIX COM PREFIXO +55
+        const CHAVES_PIX = {
+            "MARCOS": "+5544988605744",
+            "ALINE": "+55998963456" 
+        };
+
+        function copiarPix(credor, valor) {
+            const nomeCredor = credor.toUpperCase();
+            const chave = CHAVES_PIX[nomeCredor];
+            
+            if (!chave) {
+                alert(`Chave Pix de ${credor} não cadastrada no código!`);
+                return;
+            }
+
+            const valorFormatado = valor.toFixed(2);
+            const f = (id, val) => id + String(val.length).padStart(2, '0') + val;
+            
+            let payload = f('00', '01'); 
+            payload += f('26', f('00', 'br.gov.bcb.pix') + f('01', chave));
+            payload += f('52', '0000'); 
+            payload += f('53', '986'); 
+            payload += f('54', valorFormatado); 
+            payload += f('58', 'BR'); 
+            payload += f('59', nomeCredor); 
+            payload += f('60', 'TERRA BOA'); 
+            payload += f('62', f('05', 'CARONA')); 
+            
+            const pixIncompleto = payload + "6304";
+            const crc = calcularCRC16(pixIncompleto);
+            const pixFinal = pixIncompleto + crc;
+
+            navigator.clipboard.writeText(pixFinal).then(() => {
+                alert(`Pix de R$ ${valorFormatado.replace('.', ',')} para ${credor} copiado!`);
+            });
+        }
+
+        function calcularCRC16(str) {
+            let crc = 0xFFFF;
+            for (let i = 0; i < str.length; i++) {
+                crc ^= str.charCodeAt(i) << 8;
+                for (let j = 0; j < 8; j++) {
+                    if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021;
+                    else crc <<= 1;
+                }
+            }
+            return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+        }
 
         async function sincronizarGoogleSheets() {
             document.getElementById('loading-overlay').style.display = 'flex';
@@ -427,10 +480,10 @@
                 passageiros.forEach(nomeDevedor => {
                     if (localStorage.getItem(`p-${mesSel}-${d}-${nomeDevedor}`) !== 'true' && localStorage.getItem(`f-${mesSel}-${d}-${nomeDevedor}`) !== 'true') {
                         let credor = "";
-                        if (carroDia.includes("FOX") && carroDia.includes("TORO")) credor = `Conferir dia ${d}`;
+                        if (carroDia.includes("FOX") && carroDia.includes("TORO")) credor = `Marcos`;
                         else if (carroDia.includes("FOX")) credor = "Marcos";
                         else if (carroDia.includes("TORO")) credor = "Aline";
-                        else credor = `Conferir dia ${d}`;
+                        else credor = `Marcos`;
 
                         if (!dividas[nomeDevedor]) dividas[nomeDevedor] = {};
                         dividas[nomeDevedor][credor] = (dividas[nomeDevedor][credor] || 0) + VAL_DIA;
@@ -456,13 +509,17 @@
             for (const devedor in dividas) {
                 const nomeFormatado = devedor.charAt(0).toUpperCase() + devedor.slice(1).toLowerCase();
                 for (const credor in dividas[devedor]) {
+                    const valorTotal = dividas[devedor][credor];
                     list.innerHTML += `
                     <div class="finance-item">
                         <div>
                             <span class="finance-name">${nomeFormatado}</span>
                             <span class="finance-tag">${credor}</span>
                         </div>
-                        <span class="finance-value">R$ ${dividas[devedor][credor].toFixed(2).replace('.', ',')}</span>
+                        <div style="display: flex; align-items: center;">
+                            <span class="finance-value">R$ ${valorTotal.toFixed(2).replace('.', ',')}</span>
+                            <button class="btn-pix no-print" onclick="copiarPix('${credor}', ${valorTotal})">Copiar Pix</button>
+                        </div>
                     </div>`;
                 }
             }
@@ -479,4 +536,4 @@
         sincronizarGoogleSheets();
     </script>
 </body>
-</html> 
+</html>
