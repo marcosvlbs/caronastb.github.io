@@ -36,8 +36,33 @@
         .no-print { display: block; }
         h2 { text-align: center; margin-bottom: 20px; }
 
-        .tabs-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; margin-bottom: 20px; padding: 5px; background: #f1f5f9; border-radius: 10px; }
-        .tab-btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; background: transparent; font-weight: 600; color: var(--text-muted); font-size: 0.85em; }
+        /* Ajuste para Barra Deslizante */
+        .tabs-container { 
+            display: flex; 
+            flex-wrap: nowrap; 
+            justify-content: flex-start; 
+            gap: 5px; 
+            margin-bottom: 20px; 
+            padding: 8px; 
+            background: #f1f5f9; 
+            border-radius: 10px; 
+            overflow-x: auto; 
+            -webkit-overflow-scrolling: touch;
+        }
+        .tabs-container::-webkit-scrollbar { display: none; }
+
+        .tab-btn { 
+            padding: 8px 16px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            background: transparent; 
+            font-weight: 600; 
+            color: var(--text-muted); 
+            font-size: 0.85em; 
+            white-space: nowrap; 
+            flex-shrink: 0;
+        }
         .tab-btn.active { background: white; color: var(--primary); box-shadow: var(--shadow); }
 
         .controls { text-align: center; margin-bottom: 20px; }
@@ -335,6 +360,10 @@
             }
             atualizarPendencias();
             atualizarFinanceiro();
+
+            // Centraliza a aba ativa
+            const activeTab = document.querySelector('.tab-btn.active');
+            if (activeTab) activeTab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
         }
 
         function verificarStatus(d) {
@@ -380,12 +409,12 @@
 
         function atualizarFinanceiro() {
             const list = document.getElementById('financeList'); list.innerHTML = '';
-            const totals = { "Aline": 0, "Marcos": 0, "Kelen": 0, "Thalita_Aline": 0, "Thalita_Marcos": 0 };
+            const dividas = {}; 
             const VAL_DIA = 12.0; const VAL_TRECHO = 6.0;
             const diasNoMes = new Date(ANO, mesSel + 1, 0).getDate();
 
             for (let d = 1; d <= diasNoMes; d++) {
-                if (mesSel === MES_ATUAL && d >= DIA_ATUAL) continue;
+                if (mesSel === MES_ATUAL && d > DIA_ATUAL) continue;
                 if (mesSel > MES_ATUAL) continue;
 
                 const dt = new Date(ANO, mesSel, d);
@@ -393,40 +422,51 @@
                 if (sem === 0 || sem === 6) continue;
 
                 const passageiros = (sem === 5) ? ["MARCOS", "KELEN"] : ["ALINE", "KELEN"];
-                passageiros.forEach(n => {
-                    if (localStorage.getItem(`p-${mesSel}-${d}-${n}`) !== 'true' && localStorage.getItem(`f-${mesSel}-${d}-${n}`) !== 'true') {
-                        const key = n.charAt(0).toUpperCase() + n.slice(1).toLowerCase();
-                        totals[key] += VAL_DIA;
+                const carroDia = (localStorage.getItem(`car-${mesSel}-${d}`) || "").toUpperCase();
+
+                passageiros.forEach(nomeDevedor => {
+                    if (localStorage.getItem(`p-${mesSel}-${d}-${nomeDevedor}`) !== 'true' && localStorage.getItem(`f-${mesSel}-${d}-${nomeDevedor}`) !== 'true') {
+                        let credor = "";
+                        if (carroDia.includes("FOX") && carroDia.includes("TORO")) credor = `Conferir dia ${d}`;
+                        else if (carroDia.includes("FOX")) credor = "Marcos";
+                        else if (carroDia.includes("TORO")) credor = "Aline";
+                        else credor = `Conferir dia ${d}`;
+
+                        if (!dividas[nomeDevedor]) dividas[nomeDevedor] = {};
+                        dividas[nomeDevedor][credor] = (dividas[nomeDevedor][credor] || 0) + VAL_DIA;
                     }
                 });
 
                 if (sem === 3 || sem === 5) {
                     ['ida', 'vol'].forEach(t => {
                         if (localStorage.getItem(`t26-${mesSel}-${d}-${t}-ok`) !== 'true' && localStorage.getItem(`t26-${mesSel}-${d}-${t}-falta`) !== 'true') {
-                            if (localStorage.getItem(`t26-${mesSel}-${d}-${t}-aline`) === 'true') totals["Thalita_Aline"] += VAL_TRECHO;
-                            if (localStorage.getItem(`t26-${mesSel}-${d}-${t}-marcos`) === 'true') totals["Thalita_Marcos"] += VAL_TRECHO;
+                            let credorT = "";
+                            if (localStorage.getItem(`t26-${mesSel}-${d}-${t}-aline`) === 'true') credorT = "Aline";
+                            else if (localStorage.getItem(`t26-${mesSel}-${d}-${t}-marcos`) === 'true') credorT = "Marcos";
+                            
+                            if (credorT) {
+                                if (!dividas["THALITA"]) dividas["THALITA"] = {};
+                                dividas["THALITA"][credorT] = (dividas["THALITA"][credorT] || 0) + VAL_TRECHO;
+                            }
                         }
                     });
                 }
             }
 
-            Object.keys(totals).forEach(key => {
-                if(totals[key] > 0) {
-                    let label = key;
-                    let tagText = "";
-                    if(key === "Thalita_Aline") { label = "Thalita"; tagText = "Aline"; }
-                    if(key === "Thalita_Marcos") { label = "Thalita"; tagText = "Marcos"; }
-                    
+            for (const devedor in dividas) {
+                const nomeFormatado = devedor.charAt(0).toUpperCase() + devedor.slice(1).toLowerCase();
+                for (const credor in dividas[devedor]) {
                     list.innerHTML += `
                     <div class="finance-item">
                         <div>
-                            <span class="finance-name">${label}</span>
-                            ${tagText ? `<span class="finance-tag">${tagText}</span>` : ''}
+                            <span class="finance-name">${nomeFormatado}</span>
+                            <span class="finance-tag">${credor}</span>
                         </div>
-                        <span class="finance-value">R$ ${totals[key].toFixed(2).replace('.', ',')}</span>
+                        <span class="finance-value">R$ ${dividas[devedor][credor].toFixed(2).replace('.', ',')}</span>
                     </div>`;
                 }
-            });
+            }
+
             if (list.innerHTML === '') list.innerHTML = '<div style="font-size:0.75rem; color:var(--success); font-weight:bold; text-align:center; padding: 10px;">Sem pendências</div>';
         }
 
