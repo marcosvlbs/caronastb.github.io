@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -15,7 +15,7 @@
         :root {
             --primary: #4f46e5; --bg-body: #f8fafc; --bg-card: #ffffff;
             --text-main: #1e293b; --text-muted: #64748b; --border-color: #e2e8f0;
-            --success: #22c55e; --danger: #ef4444; --thalita: #8b5cf6;
+            --success: #22c55e; --danger: #ef4444; --thalita: #8b5cf6; --kelen: #0ea5e9;
             --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
         }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 20px; }
@@ -88,11 +88,14 @@
 
         .person-row { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; margin: 2px 0; padding: 4px; background: #f8fafc; border-radius: 4px; }
         
-        .print-check { display: inline-block; width: 14px; height: 14px; border: 1px solid #cbd5e1; border-radius: 3px; text-align: center; line-height: 14px; font-size: 11px; font-weight: bold; background: white; cursor: pointer; flex-shrink: 0; }
+        .print-check { display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 14px; border: 1px solid #f59e0b; border-radius: 7px; font-size: 0.48rem; font-weight: 700; background: #fffbeb; cursor: pointer; flex-shrink: 0; color: #b45309; padding: 0 4px; white-space: nowrap; }
+        .print-check::before { content: "A pagar"; }
         .print-check.checked { background-color: var(--success) !important; color: white !important; border-color: var(--success) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        .print-check.checked::after { content: "✓"; }
+        .print-check.checked::before { content: "✓ Pago"; }
 
         .absent-row { background-color: #fef2f2 !important; color: #94a3b8; -webkit-print-color-adjust: exact; }
+        .feriado-card { opacity: 0.45; filter: grayscale(0.4); }
+        .feriado-card .car-input { font-weight: 800; color: #64748b; }
 
         .thalita-box { margin-top: 5px; padding-top: 5px; border-top: 2px solid #eee; }
         .thalita-title { font-size: 0.65rem; font-weight: 800; color: var(--thalita); display: block; margin-bottom: 4px; }
@@ -113,6 +116,13 @@
         
         .sidebar { width: 280px; background: white; border-radius: 10px; padding: 15px; border: 1px solid var(--border-color); }
         .pending-item { margin-bottom: 8px; padding: 8px; background: #fffafb; border-radius: 6px; border-left: 3px solid var(--danger); font-size: 0.75rem; }
+        .pend-pessoa { margin-bottom: 10px; }
+        .pend-pessoa-nome { font-size: 0.72rem; font-weight: 800; color: var(--text-main); margin-bottom: 5px; padding-bottom: 3px; border-bottom: 1px solid #f1f5f9; }
+        .pend-dia-row { display: flex; align-items: center; flex-wrap: wrap; gap: 3px; margin-bottom: 4px; font-size: 0.68rem; }
+        .pend-dia-num { font-weight: 700; color: var(--text-muted); min-width: 30px; }
+        .pend-tag { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 0.6rem; font-weight: 700; }
+        .pend-tag.ida { background: #ede9fe; color: #6d28d9; }
+        .pend-tag.volta { background: #dbeafe; color: #1d4ed8; }
 
         /* Estilo Financeiro Melhorado */
         .finance-card { margin-top: 20px; padding-top: 15px; border-top: 2px dashed var(--border-color); }
@@ -122,9 +132,7 @@
         .finance-tag { display: inline-block; padding: 2px 8px; background: white; color: var(--primary); font-size: 0.65rem; font-weight: 700; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
         .finance-value { font-weight: 800; color: var(--primary); background: #eef2ff; padding: 4px 10px; border-radius: 6px; }
 
-        /* NOVO BOTÃO PIX - MODIFICADO */
-        .btn-pix { padding: 4px 8px; background: white; color: var(--primary); border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.65rem; font-weight: bold; cursor: pointer; transition: 0.2s; margin-left: 8px; }
-        .btn-pix:hover { background: #f1f5f9; }
+
 
         .mobile-lock-overlay { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 50; background: transparent; }
         
@@ -132,6 +140,20 @@
         .floating-edit-btn { bottom: 20px; background: var(--primary); }
         .floating-pdf-btn { bottom: 85px; background: #0ea5e9; }
 
+
+        .kelen-box { margin-top: 5px; padding-top: 5px; border-top: 2px solid #eee; }
+        .kelen-title { font-size: 0.65rem; font-weight: 800; color: var(--kelen); display: block; margin-bottom: 4px; }
+        .k-row { display: flex; align-items: center; gap: 4px; margin-bottom: 3px; padding: 2px; border-radius: 4px; }
+        .k-row.is-absent { background-color: #fee2e2 !important; -webkit-print-color-adjust: exact; }
+        .k-row.is-absent .print-check,
+        .t-row.is-absent .print-check { display: none !important; }
+        .k-label { font-size: 0.6rem; font-weight: bold; width: 35px; color: #64748b; }
+        .k-ok { margin-left: auto; }
+        .extra-person-row { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; margin: 2px 0; padding: 4px; background: #f0f9ff; border-radius: 4px; border: 1px dashed #bae6fd; }
+        .btn-add-person { margin-top: 4px; width: 100%; font-size: 0.6rem; padding: 3px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 4px; cursor: pointer; color: var(--text-muted); font-weight: 600; }
+        .btn-add-person:hover { background: #f1f5f9; }
+        .btn-remove-person { cursor: pointer; border-radius: 3px; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; font-size: 9px; border: 1px solid #fca5a5; background: white; color: var(--danger); flex-shrink: 0; }
+        .extra-name-input { border: 1px solid #bae6fd; border-radius: 4px; padding: 2px 4px; font-size: 0.65rem; width: 70px; text-transform: uppercase; }
         @media screen and (max-width: 768px) {
             body { padding: 8px; }
             .controls { display: none; }
@@ -156,11 +178,49 @@
         @media print {
             #loading-overlay, .no-print, .tabs-container, .controls, .btn-absent, .floating-edit-btn, .floating-pdf-btn { display: none !important; }
             body { padding: 0; background: white; }
-            .content-wrapper { display: block; }
-            .calendar-grid { min-width: 100%; display: grid !important; grid-template-columns: repeat(7, 1fr) !important; gap: 5px; }
+
+            /* Sidebar (pendências + valores) na primeira página, antes do calendário */
+            .main-container { display: flex; flex-direction: column; }
+            .content-wrapper { display: flex; flex-direction: column-reverse; }
+            .sidebar { width: 100%; border: none; margin-bottom: 20px; page-break-after: avoid; }
+            .calendar-grid { min-width: 100%; display: grid !important; grid-template-columns: repeat(7, 1fr) !important; gap: 5px; page-break-before: always; }
             .day-card { border: 1px solid #ccc !important; min-height: 130px; display: block !important; }
-            .sidebar { width: 100%; border: none; margin-top: 30px; }
-            .print-check.checked { background-color: #22c55e !important; color: white !important; border-color: #22c55e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+            /* Ocultar linhas com falta na impressão */
+            .k-row.is-absent, .t-row.is-absent { display: none !important; }
+
+            /* Se kelen-box ficou vazio (ambas ausentes), ocultar o box inteiro */
+            .kelen-box:not(:has(.k-row:not(.is-absent))) { display: none !important; }
+            .thalita-box:not(:has(.t-row:not(.is-absent))) { display: none !important; }
+
+            /* print-check bonito na impressão */
+            .print-check { 
+                display: inline-flex !important; align-items: center; justify-content: center;
+                min-width: 36px; height: 14px; border-radius: 7px; font-size: 0.48rem;
+                font-weight: 700; padding: 0 4px; white-space: nowrap;
+                border: 1px solid #f59e0b; background: #fffbeb; color: #b45309;
+                -webkit-print-color-adjust: exact; print-color-adjust: exact;
+            }
+            .print-check::before { content: "A pagar"; }
+            .print-check.checked { 
+                background-color: #22c55e !important; color: white !important; 
+                border-color: #22c55e !important;
+            }
+            .print-check.checked::before { content: "✓ Pago"; }
+
+            /* Pendências estilizadas na impressão */
+            .pend-pessoa { margin-bottom: 10px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .pend-pessoa-nome { font-size: 0.72rem; font-weight: 800; color: #1e293b; margin-bottom: 5px; padding-bottom: 3px; border-bottom: 1px solid #f1f5f9; }
+            .pend-dia-row { display: flex; align-items: center; flex-wrap: wrap; gap: 3px; margin-bottom: 4px; font-size: 0.68rem; }
+            .pend-dia-num { font-weight: 700; color: #64748b; min-width: 30px; }
+            .pend-tag { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 0.6rem; font-weight: 700; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .pend-tag.ida { background: #ede9fe !important; color: #6d28d9 !important; }
+            .pend-tag.volta { background: #dbeafe !important; color: #1d4ed8 !important; }
+
+            /* Financeiro */
+            .finance-item { background: #fafafa !important; -webkit-print-color-adjust: exact; }
+            .finance-value { background: #eef2ff !important; color: #4f46e5 !important; -webkit-print-color-adjust: exact; }
+            .finance-tag { background: white !important; color: #4f46e5 !important; -webkit-print-color-adjust: exact; }
         }
     </style>
 </head>
@@ -210,55 +270,6 @@
         let mobileEditMode = false;
         const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
         const SHEET_URL = "https://script.google.com/macros/s/AKfycby6mh-uw85IelgDJYDhavAgqAriQSCVaLIXLYZTX_BMYTidCei2j5T9VTS5Le6by2EhUQ/exec";
-
-        // CONFIGURAÇÃO PIX COM PREFIXO +55
-        const CHAVES_PIX = {
-            "MARCOS": "+5544988605744",
-            "ALINE": "+5544998963456" 
-        };
-
-        function copiarPix(credor, valor) {
-            const nomeCredor = credor.toUpperCase();
-            const chave = CHAVES_PIX[nomeCredor];
-            
-            if (!chave) {
-                alert(`Chave Pix de ${credor} não cadastrada no código!`);
-                return;
-            }
-
-            const valorFormatado = valor.toFixed(2);
-            const f = (id, val) => id + String(val.length).padStart(2, '0') + val;
-            
-            let payload = f('00', '01'); 
-            payload += f('26', f('00', 'br.gov.bcb.pix') + f('01', chave));
-            payload += f('52', '0000'); 
-            payload += f('53', '986'); 
-            payload += f('54', valorFormatado); 
-            payload += f('58', 'BR'); 
-            payload += f('59', nomeCredor); 
-            payload += f('60', 'TERRA BOA'); 
-            payload += f('62', f('05', 'CARONA')); 
-            
-            const pixIncompleto = payload + "6304";
-            const crc = calcularCRC16(pixIncompleto);
-            const pixFinal = pixIncompleto + crc;
-
-            navigator.clipboard.writeText(pixFinal).then(() => {
-                alert(`Pix de R$ ${valorFormatado.replace('.', ',')} para ${credor} copiado!`);
-            });
-        }
-
-        function calcularCRC16(str) {
-            let crc = 0xFFFF;
-            for (let i = 0; i < str.length; i++) {
-                crc ^= str.charCodeAt(i) << 8;
-                for (let j = 0; j < 8; j++) {
-                    if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021;
-                    else crc <<= 1;
-                }
-            }
-            return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
-        }
 
         async function sincronizarGoogleSheets() {
             document.getElementById('loading-overlay').style.display = 'flex';
@@ -337,8 +348,10 @@
         }
 
         function toggle(key) {
+            const scrollY = window.scrollY;
             localStorage.setItem(key, localStorage.getItem(key) === 'true' ? 'false' : 'true');
             renderizar();
+            window.scrollTo(0, scrollY);
         }
 
         function setMotorista(tipo, mot, dia) {
@@ -376,33 +389,65 @@
                 } else {
                     const carK = `car-${mesSel}-${d}`;
                     let html = `<div class="mobile-lock-overlay"></div>`;
-                    html += `<div class="day-header"><b>${d}</b><input type="text" class="car-input" placeholder="CARRO" value="${localStorage.getItem(carK)||''}" oninput="localStorage.setItem('${carK}', this.value.toUpperCase())"></div>`;
-                    const nomes = (sem === 5) ? ["MARCOS", "KELEN"] : ["ALINE", "KELEN"];
-                    nomes.forEach(n => {
-                        const pk = `p-${mesSel}-${d}-${n}`, fk = `f-${mesSel}-${d}-${n}`;
-                        const isP = localStorage.getItem(pk)==='true', isF = localStorage.getItem(fk)==='true';
-                        html += `<div class="person-row ${isF?'absent-row':''}">
-                            <div class="btn-absent no-print ${isF?'active':''}" onclick="toggle('${fk}')">X</div>
-                            <div class="print-check ${isP?'checked':''}" onclick="${isF ? '' : `toggle('${pk}')`}"></div>
-                            <span>${n}</span>
+                    const carVal = localStorage.getItem(carK) || '';
+                    const isFeriado = /FERIADO|RECESSO/.test(carVal.toUpperCase());
+                    if (isFeriado) card.classList.add('feriado-card');
+                    html += `<div class="day-header"><b>${d}</b><input type="text" class="car-input" placeholder="CARRO" value="${carVal}" oninput="localStorage.setItem('${carK}', this.value.toUpperCase()); const f=/FERIADO|RECESSO/.test(this.value.toUpperCase()); document.getElementById('card-${d}').classList.toggle('feriado-card', f);"></div>`;
+
+
+                    // KELEN IDA/VOLTA
+                    html += `<div class="kelen-box"><span class="kelen-title">KELEN</span>
+                        <div class="k-row ${localStorage.getItem(`k26-${mesSel}-${d}-ida-falta`)==='true'?'is-absent':''}">
+                            <div class="btn-absent no-print ${localStorage.getItem(`k26-${mesSel}-${d}-ida-falta`)==='true'?'active':''}" onclick="toggle('k26-${mesSel}-${d}-ida-falta')">X</div>
+                            <span class="k-label">IDA</span>
+                            <div class="print-check k-ok ${localStorage.getItem(`k26-${mesSel}-${d}-ida-ok`)==='true'?'checked':''}" onclick="toggle('k26-${mesSel}-${d}-ida-ok')"></div>
+                        </div>
+                        <div class="k-row ${localStorage.getItem(`k26-${mesSel}-${d}-vol-falta`)==='true'?'is-absent':''}">
+                            <div class="btn-absent no-print ${localStorage.getItem(`k26-${mesSel}-${d}-vol-falta`)==='true'?'active':''}" onclick="toggle('k26-${mesSel}-${d}-vol-falta')">X</div>
+                            <span class="k-label">VOLTA</span>
+                            <div class="print-check k-ok ${localStorage.getItem(`k26-${mesSel}-${d}-vol-ok`)==='true'?'checked':''}" onclick="toggle('k26-${mesSel}-${d}-vol-ok')"></div>
+                        </div></div>`;
+
+                    // EXTRAS
+                    const extrasCount = parseInt(localStorage.getItem(`extras-count-${mesSel}-${d}`) || '0');
+                    for (let ei = 0; ei < extrasCount; ei++) {
+                        const enk = `extra-name-${mesSel}-${d}-${ei}`;
+                        const eName = localStorage.getItem(enk) || '';
+                        const eIdaOk = localStorage.getItem(`extra-ida-ok-${mesSel}-${d}-${ei}`) === 'true';
+                        const eIdaF  = localStorage.getItem(`extra-ida-f-${mesSel}-${d}-${ei}`)  === 'true';
+                        const eVolOk = localStorage.getItem(`extra-vol-ok-${mesSel}-${d}-${ei}`) === 'true';
+                        const eVolF  = localStorage.getItem(`extra-vol-f-${mesSel}-${d}-${ei}`)  === 'true';
+                        html += `<div class="kelen-box" style="border-top-color:#e0f2fe;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                                <span class="kelen-title" style="margin-bottom:0;">
+                                    <input class="extra-name-input" placeholder="NOME" value="${eName}" oninput="localStorage.setItem('${enk}', this.value.toUpperCase()); atualizarPendencias(); atualizarFinanceiro();">
+                                </span>
+                                <div class="btn-remove-person no-print" onclick="removerPessoa(${mesSel},${d},${ei})" style="margin-left:4px;">✕</div>
+                            </div>
+                            <div class="k-row ${eIdaF?'is-absent':''}">
+                                <div class="btn-absent no-print ${eIdaF?'active':''}" onclick="toggle('extra-ida-f-${mesSel}-${d}-${ei}')">X</div>
+                                <span class="k-label">IDA</span>
+                                <div class="print-check k-ok ${eIdaOk?'checked':''}" onclick="toggle('extra-ida-ok-${mesSel}-${d}-${ei}')"></div>
+                            </div>
+                            <div class="k-row ${eVolF?'is-absent':''}">
+                                <div class="btn-absent no-print ${eVolF?'active':''}" onclick="toggle('extra-vol-f-${mesSel}-${d}-${ei}')">X</div>
+                                <span class="k-label">VOLTA</span>
+                                <div class="print-check k-ok ${eVolOk?'checked':''}" onclick="toggle('extra-vol-ok-${mesSel}-${d}-${ei}')"></div>
+                            </div>
                         </div>`;
-                    });
+                    }
+                    html += `<button class="btn-add-person no-print" onclick="adicionarPessoa(${mesSel},${d})">+ Adicionar pessoa</button>`;
 
                     if (sem === 3 || sem === 5) {
-                        const getActive = (k) => localStorage.getItem(k) === 'true' ? 'active' : '';
                         html += `<div class="thalita-box"><span class="thalita-title">THALITA</span>
                             <div class="t-row ${localStorage.getItem(`t26-${mesSel}-${d}-ida-falta`)==='true'?'is-absent':''}">
                                 <div class="btn-absent no-print ${localStorage.getItem(`t26-${mesSel}-${d}-ida-falta`)==='true'?'active':''}" onclick="toggle('t26-${mesSel}-${d}-ida-falta')">X</div>
                                 <span class="t-label">IDA</span>
-                                <button class="t-btn ${getActive(`t26-${mesSel}-${d}-ida-aline`)}" onclick="setMotorista('ida','aline',${d})">A</button>
-                                <button class="t-btn ${getActive(`t26-${mesSel}-${d}-ida-marcos`)}" onclick="setMotorista('ida','marcos',${d})">M</button>
                                 <div class="print-check t-ok ${localStorage.getItem(`t26-${mesSel}-${d}-ida-ok`)==='true'?'checked':''}" onclick="toggle('t26-${mesSel}-${d}-ida-ok')"></div>
                             </div>
                             <div class="t-row ${localStorage.getItem(`t26-${mesSel}-${d}-vol-falta`)==='true'?'is-absent':''}">
                                 <div class="btn-absent no-print ${localStorage.getItem(`t26-${mesSel}-${d}-vol-falta`)==='true'?'active':''}" onclick="toggle('t26-${mesSel}-${d}-vol-falta')">X</div>
                                 <span class="t-label">VOLTA</span>
-                                <button class="t-btn ${getActive(`t26-${mesSel}-${d}-vol-aline`)}" onclick="setMotorista('vol','aline',${d})">A</button>
-                                <button class="t-btn ${getActive(`t26-${mesSel}-${d}-vol-marcos`)}" onclick="setMotorista('vol','marcos',${d})">M</button>
                                 <div class="print-check t-ok ${localStorage.getItem(`t26-${mesSel}-${d}-vol-ok`)==='true'?'checked':''}" onclick="toggle('t26-${mesSel}-${d}-vol-ok')"></div>
                             </div></div>`;
                     }
@@ -424,8 +469,8 @@
             const sem = new Date(ANO, mesSel, d).getDay();
             if (!card || sem === 0 || sem === 6) return;
             let ok = true;
-            const nomes = (sem === 5) ? ["MARCOS", "KELEN"] : ["ALINE", "KELEN"];
-            nomes.forEach(n => { if (localStorage.getItem(`p-${mesSel}-${d}-${n}`) !== 'true' && localStorage.getItem(`f-${mesSel}-${d}-${n}`) !== 'true') ok = false; });
+            if (localStorage.getItem(`k26-${mesSel}-${d}-ida-ok`) !== 'true' && localStorage.getItem(`k26-${mesSel}-${d}-ida-falta`) !== 'true') ok = false;
+            if (localStorage.getItem(`k26-${mesSel}-${d}-vol-ok`) !== 'true' && localStorage.getItem(`k26-${mesSel}-${d}-vol-falta`) !== 'true') ok = false;
             if (sem === 3 || sem === 5) {
                 if (localStorage.getItem(`t26-${mesSel}-${d}-ida-ok`) !== 'true' && localStorage.getItem(`t26-${mesSel}-${d}-ida-falta`) !== 'true') ok = false;
                 if (localStorage.getItem(`t26-${mesSel}-${d}-vol-ok`) !== 'true' && localStorage.getItem(`t26-${mesSel}-${d}-vol-falta`) !== 'true') ok = false;
@@ -440,23 +485,49 @@
             else if (mesSel === MES_ATUAL) limiteDia = DIA_ATUAL;
             else return;
 
+            // Agrupa por pessoa: { nomePessoa: { dia: ['ida','vol'] } }
+            const porPessoa = {};
+            const addPend = (pessoa, dia, trecho) => {
+                if (!porPessoa[pessoa]) porPessoa[pessoa] = {};
+                if (!porPessoa[pessoa][dia]) porPessoa[pessoa][dia] = [];
+                porPessoa[pessoa][dia].push(trecho);
+            };
+
             for (let d = 1; d <= limiteDia; d++) {
                 const dt = new Date(ANO, mesSel, d);
                 if (dt.getDay() === 0 || dt.getDay() === 6 || dt.getMonth() !== mesSel) continue;
-                let p = [];
-                const nomes = (dt.getDay() === 5) ? ["MARCOS", "KELEN"] : ["ALINE", "KELEN"];
-                nomes.forEach(n => { if (localStorage.getItem(`p-${mesSel}-${d}-${n}`) !== 'true' && localStorage.getItem(`f-${mesSel}-${d}-${n}`) !== 'true') p.push(n); });
-                if (dt.getDay() === 3 || dt.getDay() === 5) {
-                    if (localStorage.getItem(`t26-${mesSel}-${d}-ida-falta`) !== 'true' && localStorage.getItem(`t26-${mesSel}-${d}-ida-ok`) !== 'true') {
-                        let motIda = localStorage.getItem(`t26-${mesSel}-${d}-ida-aline`) === 'true' ? "(Aline)" : (localStorage.getItem(`t26-${mesSel}-${d}-ida-marcos`) === 'true' ? "(Marcos)" : "");
-                        p.push(`Thalita Ida ${motIda}`.trim());
-                    }
-                    if (localStorage.getItem(`t26-${mesSel}-${d}-vol-falta`) !== 'true' && localStorage.getItem(`t26-${mesSel}-${d}-vol-ok`) !== 'true') {
-                        let motVol = localStorage.getItem(`t26-${mesSel}-${d}-vol-aline`) === 'true' ? "(Aline)" : (localStorage.getItem(`t26-${mesSel}-${d}-vol-marcos`) === 'true' ? "(Marcos)" : "");
-                        p.push(`Thalita Volta ${motVol}`.trim());
-                    }
+
+                const kelenPagoJanAbr = mesSel <= 3 && localStorage.getItem(`p-${mesSel}-${d}-KELEN`) === 'true';
+                if (!kelenPagoJanAbr) {
+                    if (localStorage.getItem(`k26-${mesSel}-${d}-ida-ok`) !== 'true' && localStorage.getItem(`k26-${mesSel}-${d}-ida-falta`) !== 'true') addPend('Kelen', d, 'ida');
+                    if (localStorage.getItem(`k26-${mesSel}-${d}-vol-ok`) !== 'true' && localStorage.getItem(`k26-${mesSel}-${d}-vol-falta`) !== 'true') addPend('Kelen', d, 'volta');
                 }
-                if (p.length > 0) list.innerHTML += `<div class="pending-item"><b>Dia ${d}:</b> ${p.join(' | ')}</div>`;
+
+                const extrasCount = parseInt(localStorage.getItem(`extras-count-${mesSel}-${d}`) || '0');
+                for (let ei = 0; ei < extrasCount; ei++) {
+                    const eName = (localStorage.getItem(`extra-name-${mesSel}-${d}-${ei}`) || `Extra ${ei+1}`);
+                    const nomeFormatado = eName.charAt(0).toUpperCase() + eName.slice(1).toLowerCase();
+                    if (localStorage.getItem(`extra-ida-ok-${mesSel}-${d}-${ei}`) !== 'true' && localStorage.getItem(`extra-ida-f-${mesSel}-${d}-${ei}`) !== 'true') addPend(nomeFormatado, d, 'ida');
+                    if (localStorage.getItem(`extra-vol-ok-${mesSel}-${d}-${ei}`) !== 'true' && localStorage.getItem(`extra-vol-f-${mesSel}-${d}-${ei}`) !== 'true') addPend(nomeFormatado, d, 'volta');
+                }
+
+                if (dt.getDay() === 3 || dt.getDay() === 5) {
+                    if (localStorage.getItem(`t26-${mesSel}-${d}-ida-falta`) !== 'true' && localStorage.getItem(`t26-${mesSel}-${d}-ida-ok`) !== 'true') addPend('Thalita', d, 'ida');
+                    if (localStorage.getItem(`t26-${mesSel}-${d}-vol-falta`) !== 'true' && localStorage.getItem(`t26-${mesSel}-${d}-vol-ok`) !== 'true') addPend('Thalita', d, 'volta');
+                }
+            }
+
+            if (Object.keys(porPessoa).length === 0) return;
+
+            for (const pessoa in porPessoa) {
+                let html = `<div class="pend-pessoa"><div class="pend-pessoa-nome">👤 ${pessoa}</div>`;
+                for (const dia in porPessoa[pessoa]) {
+                    const trechos = porPessoa[pessoa][dia];
+                    const tags = trechos.map(t => `<span class="pend-tag ${t}">${t.charAt(0).toUpperCase() + t.slice(1)}</span>`).join(' ');
+                    html += `<div class="pend-dia-row"><span class="pend-dia-num">Dia ${dia}</span>${tags}</div>`;
+                }
+                html += `</div>`;
+                list.innerHTML += html;
             }
         }
 
@@ -474,7 +545,7 @@
                 const sem = dt.getDay();
                 if (sem === 0 || sem === 6) continue;
 
-                const passageiros = (sem === 5) ? ["MARCOS", "KELEN"] : ["ALINE", "KELEN"];
+                const passageiros = [];
                 const carroDia = (localStorage.getItem(`car-${mesSel}-${d}`) || "").toUpperCase();
 
                 passageiros.forEach(nomeDevedor => {
@@ -490,17 +561,38 @@
                     }
                 });
 
+                // KELEN: R$6,00 por ida e volta. Jan-Abr: chave antiga p-mes-dia-KELEN=true considera pago.
+                const kelenPagoAntigo = mesSel <= 3 && localStorage.getItem(`p-${mesSel}-${d}-KELEN`) === 'true';
+                if (!kelenPagoAntigo) {
+                    ['ida', 'vol'].forEach(t => {
+                        const kelenOk = localStorage.getItem(`k26-${mesSel}-${d}-${t}-ok`) === 'true';
+                        const kelenFalta = localStorage.getItem(`k26-${mesSel}-${d}-${t}-falta`) === 'true';
+                        if (!kelenOk && !kelenFalta) {
+                            if (!dividas["KELEN"]) dividas["KELEN"] = {};
+                            dividas["KELEN"]["Marcos"] = (dividas["KELEN"]["Marcos"] || 0) + VAL_TRECHO;
+                        }
+                    });
+                }
+
+                // EXTRAS: R$6,00 por ida e volta cada pessoa extra
+                const extrasCountFin = parseInt(localStorage.getItem(`extras-count-${mesSel}-${d}`) || '0');
+                for (let ei = 0; ei < extrasCountFin; ei++) {
+                    const eName = (localStorage.getItem(`extra-name-${mesSel}-${d}-${ei}`) || `EXTRA${ei+1}`).toUpperCase();
+                    ['ida', 'vol'].forEach(t => {
+                        const eOk = localStorage.getItem(`extra-${t}-ok-${mesSel}-${d}-${ei}`) === 'true';
+                        const eF  = localStorage.getItem(`extra-${t}-f-${mesSel}-${d}-${ei}`)  === 'true';
+                        if (!eOk && !eF) {
+                            if (!dividas[eName]) dividas[eName] = {};
+                            dividas[eName]["Marcos"] = (dividas[eName]["Marcos"] || 0) + VAL_TRECHO;
+                        }
+                    });
+                }
+
                 if (sem === 3 || sem === 5) {
                     ['ida', 'vol'].forEach(t => {
                         if (localStorage.getItem(`t26-${mesSel}-${d}-${t}-ok`) !== 'true' && localStorage.getItem(`t26-${mesSel}-${d}-${t}-falta`) !== 'true') {
-                            let credorT = "";
-                            if (localStorage.getItem(`t26-${mesSel}-${d}-${t}-aline`) === 'true') credorT = "Aline";
-                            else if (localStorage.getItem(`t26-${mesSel}-${d}-${t}-marcos`) === 'true') credorT = "Marcos";
-                            
-                            if (credorT) {
-                                if (!dividas["THALITA"]) dividas["THALITA"] = {};
-                                dividas["THALITA"][credorT] = (dividas["THALITA"][credorT] || 0) + VAL_TRECHO;
-                            }
+                            if (!dividas["THALITA"]) dividas["THALITA"] = {};
+                            dividas["THALITA"]["Marcos"] = (dividas["THALITA"]["Marcos"] || 0) + VAL_TRECHO;
                         }
                     });
                 }
@@ -518,13 +610,34 @@
                         </div>
                         <div style="display: flex; align-items: center;">
                             <span class="finance-value">R$ ${valorTotal.toFixed(2).replace('.', ',')}</span>
-                            <button class="btn-pix no-print" onclick="copiarPix('${credor}', ${valorTotal})">Copiar Pix</button>
                         </div>
                     </div>`;
                 }
             }
 
             if (list.innerHTML === '') list.innerHTML = '<div style="font-size:0.75rem; color:var(--success); font-weight:bold; text-align:center; padding: 10px;">Sem pendências</div>';
+        }
+
+        function adicionarPessoa(mes, dia) {
+            const ck = `extras-count-${mes}-${dia}`;
+            const count = parseInt(localStorage.getItem(ck) || '0');
+            localStorage.setItem(ck, count + 1);
+            renderizar();
+        }
+
+        function removerPessoa(mes, dia, idx) {
+            const ck = `extras-count-${mes}-${dia}`;
+            const count = parseInt(localStorage.getItem(ck) || '0');
+            for (let i = idx; i < count - 1; i++) {
+                localStorage.setItem(`extra-name-${mes}-${dia}-${i}`, localStorage.getItem(`extra-name-${mes}-${dia}-${i+1}`) || '');
+                localStorage.setItem(`extra-p-${mes}-${dia}-${i}`, localStorage.getItem(`extra-p-${mes}-${dia}-${i+1}`) || 'false');
+                localStorage.setItem(`extra-f-${mes}-${dia}-${i}`, localStorage.getItem(`extra-f-${mes}-${dia}-${i+1}`) || 'false');
+            }
+            localStorage.removeItem(`extra-name-${mes}-${dia}-${count-1}`);
+            localStorage.removeItem(`extra-p-${mes}-${dia}-${count-1}`);
+            localStorage.removeItem(`extra-f-${mes}-${dia}-${count-1}`);
+            localStorage.setItem(ck, Math.max(0, count - 1));
+            renderizar();
         }
 
         const tB = document.getElementById('tabs');
