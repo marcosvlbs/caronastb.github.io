@@ -629,13 +629,19 @@
             const ck = `extras-count-${mes}-${dia}`;
             const count = parseInt(localStorage.getItem(ck) || '0');
             for (let i = idx; i < count - 1; i++) {
-                localStorage.setItem(`extra-name-${mes}-${dia}-${i}`, localStorage.getItem(`extra-name-${mes}-${dia}-${i+1}`) || '');
-                localStorage.setItem(`extra-p-${mes}-${dia}-${i}`, localStorage.getItem(`extra-p-${mes}-${dia}-${i+1}`) || 'false');
-                localStorage.setItem(`extra-f-${mes}-${dia}-${i}`, localStorage.getItem(`extra-f-${mes}-${dia}-${i+1}`) || 'false');
+                const next = i + 1;
+                localStorage.setItem(`extra-name-${mes}-${dia}-${i}`,   localStorage.getItem(`extra-name-${mes}-${dia}-${next}`)   || '');
+                localStorage.setItem(`extra-ida-ok-${mes}-${dia}-${i}`, localStorage.getItem(`extra-ida-ok-${mes}-${dia}-${next}`) || 'false');
+                localStorage.setItem(`extra-ida-f-${mes}-${dia}-${i}`,  localStorage.getItem(`extra-ida-f-${mes}-${dia}-${next}`)  || 'false');
+                localStorage.setItem(`extra-vol-ok-${mes}-${dia}-${i}`, localStorage.getItem(`extra-vol-ok-${mes}-${dia}-${next}`) || 'false');
+                localStorage.setItem(`extra-vol-f-${mes}-${dia}-${i}`,  localStorage.getItem(`extra-vol-f-${mes}-${dia}-${next}`)  || 'false');
             }
-            localStorage.removeItem(`extra-name-${mes}-${dia}-${count-1}`);
-            localStorage.removeItem(`extra-p-${mes}-${dia}-${count-1}`);
-            localStorage.removeItem(`extra-f-${mes}-${dia}-${count-1}`);
+            const last = count - 1;
+            localStorage.removeItem(`extra-name-${mes}-${dia}-${last}`);
+            localStorage.removeItem(`extra-ida-ok-${mes}-${dia}-${last}`);
+            localStorage.removeItem(`extra-ida-f-${mes}-${dia}-${last}`);
+            localStorage.removeItem(`extra-vol-ok-${mes}-${dia}-${last}`);
+            localStorage.removeItem(`extra-vol-f-${mes}-${dia}-${last}`);
             localStorage.setItem(ck, Math.max(0, count - 1));
             renderizar();
         }
