@@ -675,7 +675,7 @@
     function atualizarFinanceiro() {
         const list = document.getElementById('financeList'); list.innerHTML = '';
         const dividas = {};
-        const VAL_DIA = 12.0; const VAL_TRECHO = 6.0;
+        const DATA_REAJUSTE = new Date(2026, 6, 1); // 1º de julho de 2026
         const diasNoMes = new Date(ANO, mesSel + 1, 0).getDate();
 
         for (let d = 1; d <= diasNoMes; d++) {
@@ -684,13 +684,15 @@
             const dt = new Date(ANO, mesSel, d);
             const sem = dt.getDay();
             if (sem === 0 || sem === 6) continue;
+            const VAL_TRECHO = dt >= DATA_REAJUSTE ? 7.0 : 6.0;
+            const VAL_TRECHO_KELEN = 6.0;
 
             const kelenPago = mesSel <= 3 && localStorage.getItem(`p-${mesSel}-${d}-KELEN`) === 'true';
             if (!kelenPago) {
                 ['ida', 'vol'].forEach(t => {
                     if (localStorage.getItem(`k26-${mesSel}-${d}-${t}-ok`) !== 'true' && localStorage.getItem(`k26-${mesSel}-${d}-${t}-falta`) !== 'true') {
                         if (!dividas["KELEN"]) dividas["KELEN"] = {};
-                        dividas["KELEN"]["Marcos"] = (dividas["KELEN"]["Marcos"] || 0) + VAL_TRECHO;
+                        dividas["KELEN"]["Marcos"] = (dividas["KELEN"]["Marcos"] || 0) + VAL_TRECHO_KELEN;
                     }
                 });
             }
